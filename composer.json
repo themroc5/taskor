@@ -2,7 +2,7 @@
     "name": "medienpol/taskor",
     "authors": [
         {
-            "name": "Paul Heisig",
+            "name": "Paul Heisig"
         }
     ],
     "minimum-stability": "stable",
@@ -12,7 +12,8 @@
     "require": {
         "php": ">=5.4.0",
         "symfony/process": "~3.0.5",
-        "symfony/filesystem": "~3.0.5",
-        "cypresslab/gitelephant": "~1.1.0"
+        "cypresslab/gitelephant": "~1.1.0",
+        "phpseclib/phpseclib": "~2.0.1"
     }
 }
+
