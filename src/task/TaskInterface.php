@@ -8,8 +8,8 @@ interface TaskInterface
 {
     public function setTaskJob(BaseTaskJob $job);
 
-    public function task();
-    public function execute();
+    public function getCommand();
+    public function getCwd();
     public function getName();
     public function getDescription();
 

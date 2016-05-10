@@ -2,7 +2,9 @@
 
 namespace medienpol\taskor\job;
 
-use medienpol\taskor\task\filesystem\CleanDirTask;
+use medienpol\taskor\exception\TaskErrorException;
+use medienpol\taskor\server\ServerInterface;
+use medienpol\taskor\task\CleanDirTask;
 use medienpol\taskor\task\TaskInterface;
 use yii\base\Component;
 use yii\helpers\ArrayHelper;
@@ -12,6 +14,15 @@ use yii\log\Logger;
 abstract class BaseTaskJob extends Component
 {
     public $verboseConsole = false;
+
+    /** @var ServerInterface */
+    public $server;
+
+    public function setServer(ServerInterface $server)
+    {
+        $this->server = $server;
+        $this->server->prepare();
+    }
 
     /**
      * @param $name
@@ -29,7 +40,7 @@ abstract class BaseTaskJob extends Component
 
     public function executeTask($name, $options = [])
     {
-        $class = $this->getClassName($name);
+        $class = $this->getTaskClassName($name);
         $task = $this->createTask($class, $options);
 
         if ($this->verboseConsole) {
@@ -37,13 +48,18 @@ abstract class BaseTaskJob extends Component
         }
 
         try {
-            $result = $task->execute();
+            $cmd = $task->getCommand();
+            $cwd = $task->getCwd();
+            $result = $this->server->execute($cmd, $cwd);
 
-            if ($this->verboseConsole) {
-                Console::output(Console::renderColoredString(" %N%gSuccessful!%n"));
+            if ($result->isSuccessful) {
+                if ($this->verboseConsole) {
+                    Console::output(Console::renderColoredString(" %N%gSuccessful!%n"));
+                }
+                return $result->output;
             }
 
-            return $result;
+            throw new TaskErrorException($result->errorOutput);
         } catch (\Exception $e) {
             $message = $e->getMessage();
             Console::output(Console::renderColoredString(" %N%rError!%n"));
@@ -93,7 +109,7 @@ abstract class BaseTaskJob extends Component
 
         }
     }
-    private function getClassName($name)
+    private function getTaskClassName($name)
     {
         $lowerName = mb_strtolower($name);
         $shortcuts = $this->taskShortcuts();

@@ -2,7 +2,9 @@
 
 namespace medienpol\taskor\task;
 
+use medienpol\taskor\exception\TaskErrorException;
 use medienpol\taskor\job\BaseTaskJob;
+use medienpol\taskor\server\ServerInterface;
 use yii\base\Component;
 use yii\base\Event;
 use yii\log\Logger;
@@ -16,6 +18,8 @@ abstract class BaseTask extends Component
 
     /** @var BaseTaskJob */
     public $taskJob;
+    /** @var ServerInterface */
+    public $server;
 
     public $name = '';
     public $logCategory = '';
@@ -34,15 +38,6 @@ abstract class BaseTask extends Component
     public function execute()
     {
         $this->task();
-//        try {
-//            $this->trigger(self::EVENT_BEFORE_TASK);
-//            $this->trigger(self::EVENT_TASK_SUCCESSFUL);
-//        } catch (\Exception $e) {
-//
-//            $this->trigger(self::EVENT_TASK_ERROR, $event);
-//        } finally {
-//            $this->trigger(self::EVENT_AFTER_TASK);
-//        }
     }
 
     public function setTaskJob(BaseTaskJob $job)
@@ -50,13 +45,37 @@ abstract class BaseTask extends Component
         $this->taskJob = $job;
     }
 
+    public function setServer(ServerInterface $server)
+    {
+        $this->server = $server;
+        $this->server->prepare();
+    }
+
+    public function getServer()
+    {
+        if ($this->server) {
+            return $this->server;
+        }
+
+        if ($this->taskJob->server) {
+            return $this->taskJob->server;
+        }
+
+        throw new TaskErrorException('Server must be set!');
+    }
+
     public function getName()
     {
         return $this->name;
     }
 
-    public function task()
+    public function getCommand()
     {
         // noop
+    }
+
+    public function getCwd()
+    {
+        return null;
     }
 }
