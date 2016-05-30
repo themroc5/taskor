@@ -15,9 +15,9 @@ interface ServerInterface
     public function isReady();
 
     /**
-     * @param string $cmd
+     * @param string $command
      * @param string $cwd
      * @return ServerReply
      */
-    public function execute($cmd, $cwd);
+    public function execute($command, $cwd);
 }

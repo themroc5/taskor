@@ -6,6 +6,6 @@ class ServerReply
 {
     public $code;
     public $output;
-    public $errorOutput;
+//    public $errorOutput;
     public $isSuccessful;
 }

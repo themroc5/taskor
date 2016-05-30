@@ -2,6 +2,8 @@
 
 namespace medienpol\taskor\task;
 
+use yii\base\Component;
+
 class CleanDirTask extends BaseTask implements TaskInterface
 {
     public $keep = [
@@ -10,6 +12,11 @@ class CleanDirTask extends BaseTask implements TaskInterface
     ];
 
     public $path;
+
+    public function getName()
+    {
+        return 'Clean Directory';
+    }
 
     public function getDescription()
     {
@@ -26,8 +33,25 @@ class CleanDirTask extends BaseTask implements TaskInterface
             $cmd .= " ! -name '$filename'";
         }
 
-        $cmd .= " -exec rm -f {} +  && find $path -type d -empty -delete";
+        $cmd .= " -exec rm -f {} + && find $path -type d -empty -delete";
 
         return $cmd;
+    }
+
+    public function getCwd()
+    {
+        return null;
+    }
+
+    public function requiredParameters()
+    {
+        return [
+            'path',
+        ];
+    }
+
+    public function continueOnError()
+    {
+        return true;
     }
 }

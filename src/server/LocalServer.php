@@ -24,23 +24,21 @@ class LocalServer implements ServerInterface
     }
 
     /**
-     * @param string $cmd
-     * @param array $env
-     * @param string $input
-     * @param $timeout
+     * @param string $command
      * @return ServerReply
+     * @internal param $timeout
      */
-    public function execute($cmd, $cwd = null)
+    public function execute($command, $cwd = null)
     {
-        $process = new Process($cmd, $cwd);
-        $process->setPty(true);
+        $process = new Process($command, $cwd);
+        $process->setPty(false);
         $process->run();
         
         $reply = new ServerReply();
         $reply->isSuccessful = $process->isSuccessful();
         $reply->code = $process->getExitCode();
-        $reply->output = $process->getOutput();
-        $reply->errorOutput = $process->getErrorOutput();
+        $reply->output = trim($process->getOutput());
+//        $reply->errorOutput = trim($process->getErrorOutput());
 
         return $reply;
     }

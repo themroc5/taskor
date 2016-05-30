@@ -3,79 +3,79 @@
 namespace medienpol\taskor\task;
 
 use medienpol\taskor\exception\TaskErrorException;
-use medienpol\taskor\job\BaseTaskJob;
+use medienpol\taskor\job\TaskJob;
 use medienpol\taskor\server\ServerInterface;
 use yii\base\Component;
-use yii\base\Event;
-use yii\log\Logger;
 
 abstract class BaseTask extends Component
 {
-    const EVENT_BEFORE_TASK = 'EVENT_BEFORE_TASK';
-    const EVENT_AFTER_TASK = 'EVENT_AFTER_TASK';
-    const EVENT_TASK_SUCCESSFUL = 'EVENT_TASK_SUCCESSFUL';
-    const EVENT_TASK_ERROR = 'EVENT_TASK_ERROR';
+    /** @var TaskJob */
+    public $job;
 
-    /** @var BaseTaskJob */
-    public $taskJob;
     /** @var ServerInterface */
     public $server;
 
-    public $name = '';
-    public $logCategory = '';
-
-    public function init()
+    public function setJob(TaskJob $job)
     {
-        if (empty($this->logCategory)) {
-            $this->logCategory = get_class($this);
-        }
-
-        if (empty($this->name)) {
-            $this->name = get_class($this);
-        }
-    }
-
-    public function execute()
-    {
-        $this->task();
-    }
-
-    public function setTaskJob(BaseTaskJob $job)
-    {
-        $this->taskJob = $job;
-    }
-
-    public function setServer(ServerInterface $server)
-    {
-        $this->server = $server;
-        $this->server->prepare();
-    }
-
-    public function getServer()
-    {
-        if ($this->server) {
-            return $this->server;
-        }
-
-        if ($this->taskJob->server) {
-            return $this->taskJob->server;
-        }
-
-        throw new TaskErrorException('Server must be set!');
+        $this->job = $job;
     }
 
     public function getName()
     {
-        return $this->name;
+        return $this->className();
     }
 
-    public function getCommand()
+    public function info($message)
     {
-        // noop
+        $this->job->info($message, $this->getName());
     }
 
-    public function getCwd()
+    public function warning($message)
     {
-        return null;
+        $this->job->warning($message, $this->getName());
+    }
+
+    public function error($message)
+    {
+        $this->job->error($message, $this->getName());
+    }
+
+    public function continueOnError()
+    {
+        return false;
+    }
+
+    public function processOutput($output)
+    {
+        return $output;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasServer()
+    {
+        return !!$this->server;
+    }
+
+    public function setServer(ServerInterface $server)
+    {
+        if (!$server->isReady()) {
+            $this->job->prepareServer($server);
+        }
+
+        $this->server = $server;
+    }
+
+    /**
+     * @return ServerInterface
+     */
+    public function getServer()
+    {
+        if ($this->hasServer()) {
+            return $this->server;
+        } else {
+            return $this->job->server;
+        }
     }
 }

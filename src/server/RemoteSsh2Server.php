@@ -58,7 +58,7 @@ class RemoteSsh2Server extends Component implements ServerInterface
             }
 
             if (!file_exists($this->rsaKeyPath)) {
-                throw new ServerParameterException('RemoteSsh2Server requires an existing RSA key file.');
+                throw new ServerParameterException("The file {$this->rsaKeyPath} does not exist.");
             }
 
             $key = new RSA();
@@ -83,7 +83,7 @@ class RemoteSsh2Server extends Component implements ServerInterface
             }
         }
 
-        $this->connection->enableQuietMode();
+//        $this->connection->enableQuietMode();
         $this->isReady = true;
     }
 
@@ -96,25 +96,25 @@ class RemoteSsh2Server extends Component implements ServerInterface
     }
 
     /**
-     * @param string $cmd
+     * @param string $command
      * @param array $env
      * @param string $input
      * @param $timeout
      * @return ServerReply
      */
-    public function execute($cmd, $cwd = null)
+    public function execute($command, $cwd = null)
     {
         if ($cwd) {
-            $cmd = "cd $cwd && $cmd";
+            $command = "cd $cwd && $command";
         }
 
-        $output = $this->connection->exec($cmd);
+        $output = $this->connection->exec($command);
 
         $reply = new ServerReply();
         $reply->code = (int)$this->connection->getExitStatus();
         $reply->isSuccessful = $reply->code == 0;
         $reply->output = $output;
-        $reply->errorOutput = $this->connection->getStdError();
+//        $reply->errorOutput = $this->connection->getStdError();
 
         return $reply;
     }
